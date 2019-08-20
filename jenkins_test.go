@@ -1,4 +1,4 @@
-package gojenkins
+package gojks
 
 import (
 	"fmt"
