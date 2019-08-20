@@ -113,7 +113,7 @@ type JobBuild struct {
 	Number            int
 	QueueID           int `json:"queueId"`
 	Result            string
-	Timestamp         int32       `json:"timestamp"`
+	Timestamp         int64       `json:"timestamp"`
 	URL               string      `json:"url"`
 	ChangeSets        interface{} `json:"changeSets"`
 	Culprits          interface{} `json:"culprits"`
