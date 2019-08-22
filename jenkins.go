@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -23,8 +24,8 @@ type param struct {
 }
 
 // NewAPI func
-func NewAPI(url string, username string, password string) *API {
-	return &API{url, username, password, &http.Client{}}
+func NewAPI(ur string, username string, password string) *API {
+	return &API{ur, username, password, &http.Client{}}
 }
 
 // HTTPDo func
@@ -44,44 +45,18 @@ func (api *API) HTTPDo(url string, method string) (body []byte, err error) {
 
 }
 
-// getParams func
-func getParams(d map[string]interface{}) (res []byte, err error) {
-	/*
-		var res string
-		var resArr []string
-		for k, v := range d {
-			resArr = append(resArr, fmt.Sprintf("%s=%s", k, v))
-		}
-		res = strings.Join(resArr, "&")
-		return res
-	*/
-	var params map[string][]param
-	params = make(map[string][]param)
-	var resArr []param
-	for k, v := range d {
-		resArr = append(resArr, param{Name: k, Value: v})
-	}
-	params["parameter"] = resArr
-	res, err = json.Marshal(params)
-	fmt.Println(string(res))
-	return
-
-}
-
-// HTTPDoHeader func
-func (api *API) HTTPDoHeader(ur string, method string, header map[string]string, params map[string]string) (body []byte, err error) {
-	/*
-		data, err := getParams(d)
-		if err != nil {
-			return
-		}
-	*/
-	//fmt.Println(bytes.NewBuffer(data))
+// formatParams func
+func formatParams(params map[string]string) url.Values {
 	data := url.Values{}
 	for k, v := range params {
 		data.Set(k, v)
 	}
-	req, err := http.NewRequest(method, ur, bytes.NewBufferString(data.Encode()))
+	return data
+}
+
+// HTTPDoHeader func
+func (api *API) HTTPDoHeader(ur string, method string, header map[string]string, bd io.Reader) (body []byte, err error) {
+	req, err := http.NewRequest(method, ur, bd)
 	if err != nil {
 		return
 	}
@@ -102,8 +77,8 @@ func (api *API) HTTPDoHeader(ur string, method string, header map[string]string,
 
 // ListJobs func
 func (api *API) ListJobs() (data []Job, err error) {
-	url := api.baseurl + "/api/json"
-	body, err := api.HTTPDo(url, "GET")
+	ur := api.baseurl + "/api/json"
+	body, err := api.HTTPDo(ur, "GET")
 	if err != nil {
 		return
 	}
@@ -118,8 +93,8 @@ func (api *API) ListJobs() (data []Job, err error) {
 
 // ListViews func
 func (api *API) ListViews() (data []View, err error) {
-	url := api.baseurl + "/api/json"
-	body, err := api.HTTPDo(url, "GET")
+	ur := api.baseurl + "/api/json"
+	body, err := api.HTTPDo(ur, "GET")
 	if err != nil {
 		return
 	}
@@ -134,8 +109,8 @@ func (api *API) ListViews() (data []View, err error) {
 
 // GetJob func
 func (api *API) GetJob(j string) (data JobInfo, err error) {
-	url := fmt.Sprintf("%s/job/%s/api/json", api.baseurl, j)
-	body, err := api.HTTPDo(url, "GET")
+	ur := fmt.Sprintf("%s/job/%s/api/json", api.baseurl, j)
+	body, err := api.HTTPDo(ur, "GET")
 	if err != nil {
 		return
 	}
@@ -145,8 +120,8 @@ func (api *API) GetJob(j string) (data JobInfo, err error) {
 
 // GetJobParams func
 func (api *API) GetJobParams(j string) (data []ParameterDefinition, err error) {
-	url := fmt.Sprintf("%s/job/%s/api/json", api.baseurl, j)
-	body, err := api.HTTPDo(url, "GET")
+	ur := fmt.Sprintf("%s/job/%s/api/json", api.baseurl, j)
+	body, err := api.HTTPDo(ur, "GET")
 	if err != nil {
 		return
 	}
@@ -162,8 +137,8 @@ func (api *API) GetJobParams(j string) (data []ParameterDefinition, err error) {
 
 // GetJobBuild func
 func (api *API) GetJobBuild(j string, b int) (data JobBuild, err error) {
-	url := fmt.Sprintf("%s/job/%s/%d/api/json", api.baseurl, j, b)
-	body, err := api.HTTPDo(url, "GET")
+	ur := fmt.Sprintf("%s/job/%s/%d/api/json", api.baseurl, j, b)
+	body, err := api.HTTPDo(ur, "GET")
 	if err != nil {
 		return
 	}
@@ -173,8 +148,8 @@ func (api *API) GetJobBuild(j string, b int) (data JobBuild, err error) {
 
 // GetBuildConsoleOutput func
 func (api *API) GetBuildConsoleOutput(j string, b int) (data string, err error) {
-	url := fmt.Sprintf("%s/job/%s/%d/consoleText", api.baseurl, j, b)
-	body, err := api.HTTPDo(url, "GET")
+	ur := fmt.Sprintf("%s/job/%s/%d/consoleText", api.baseurl, j, b)
+	body, err := api.HTTPDo(ur, "GET")
 	if err != nil {
 		return
 	}
@@ -184,18 +159,9 @@ func (api *API) GetBuildConsoleOutput(j string, b int) (data string, err error) 
 
 // Build func
 func (api *API) Build(j string) error {
-	url := fmt.Sprintf("%s/job/%s/build", api.baseurl, j)
-	body, err := api.HTTPDo(url, "POST")
-	/*
-		header := map[string]string{
-			"Content-Type": "application/json",
-		}
-		data, err := getParams(d)
-		if err != nil {
-			return err
-		}
-		_, err = api.HTTPDoHeader(url, "POST", header, data)
-	*/
+	ur := fmt.Sprintf("%s/job/%s/build", api.baseurl, j)
+	body, err := api.HTTPDo(ur, "POST")
+
 	if err != nil {
 		return err
 	}
@@ -207,19 +173,57 @@ func (api *API) Build(j string) error {
 
 // BuildWithParams func
 func (api *API) BuildWithParams(j string, d map[string]string) error {
-	url := fmt.Sprintf("%s/job/%s/buildWithParameters", api.baseurl, j)
+	ur := fmt.Sprintf("%s/job/%s/buildWithParameters", api.baseurl, j)
 
 	header := map[string]string{
-		//"Content-Type": "application/json",
 		"Content-Type": "application/x-www-form-urlencoded",
 	}
 
-	_, err := api.HTTPDoHeader(url, "POST", header, d)
+	data := formatParams(d)
+
+	_, err := api.HTTPDoHeader(ur, "POST", header, bytes.NewBufferString(data.Encode()))
 
 	if err != nil {
 		return err
 	}
 	//da := string(body)
 	//fmt.Println(da)
+	return nil
+}
+
+// CreateJob func
+func (api *API) CreateJob(j string, config string) error {
+	ur := fmt.Sprintf("%s/createItem?name=%s", api.baseurl, j)
+	header := map[string]string{
+		"Content-Type": "text/xml",
+	}
+	_, err := api.HTTPDoHeader(ur, "POST", header, bytes.NewBufferString(config))
+	if err != nil {
+		return err
+	}
+	//fmt.Println(string(body))
+	return nil
+
+}
+
+// DeleteJob func
+func (api *API) DeleteJob(j string) error {
+	ur := fmt.Sprintf("%s/job/%s/doDelete", api.baseurl, j)
+	_, err := api.HTTPDo(ur, "POST")
+	if err != nil {
+		return err
+	}
+	//fmt.Println(string(body))
+	return nil
+}
+
+// UpdateJob func
+func (api *API) UpdateJob(j, config string) error {
+	ur := fmt.Sprintf("%s/job/%s/config.xml", api.baseurl, j)
+	body, err := api.HTTPDoHeader(ur, "POST", nil, bytes.NewBufferString(config))
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(body))
 	return nil
 }

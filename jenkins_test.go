@@ -11,7 +11,6 @@ var (
 	passwd  = "jks2018"
 )
 
-/*
 func TestListJobs(t *testing.T) {
 	api := NewAPI(baseurl, user, passwd)
 	data, err := api.ListJobs()
@@ -21,6 +20,7 @@ func TestListJobs(t *testing.T) {
 	fmt.Println(data[0].Name)
 }
 
+/*
 func TestListViews(t *testing.T) {
 	api := NewAPI(baseurl, user, passwd)
 	data, err := api.ListViews()
@@ -57,17 +57,97 @@ func TestGetJobBuild(t *testing.T) {
 	}
 	fmt.Println(data)
 }
+*/
 
+/*
 func TestBuildWithParams(t *testing.T) {
 	api := NewAPI(baseurl, user, passwd)
 	d := make(map[string]string)
-	d["aa"] = "cc"
+	d["aa"] = "xx"
 	err := api.BuildWithParams("test11", d)
 	fmt.Println(err)
 }
 */
+
+/*
 func TestGetBuildConsoleOutput(t *testing.T) {
 	api := NewAPI(baseurl, user, passwd)
 	data, err := api.GetBuildConsoleOutput("app-microservice-web", 39)
 	fmt.Println(data, err)
 }
+*/
+
+/*
+func TestCreateJob(t *testing.T) {
+	api := NewAPI(baseurl, user, passwd)
+	config := `<?xml version='1.1' encoding='UTF-8'?>
+	<flow-definition plugin="workflow-job@2.29">
+	  <actions/>
+	  <description></description>
+	  <keepDependencies>false</keepDependencies>
+	  <properties>
+		<hudson.model.ParametersDefinitionProperty>
+		  <parameterDefinitions>
+			<hudson.model.StringParameterDefinition>
+			  <name>aa</name>
+			  <description></description>
+			  <defaultValue>aa</defaultValue>
+			  <trim>false</trim>
+			</hudson.model.StringParameterDefinition>
+		  </parameterDefinitions>
+		</hudson.model.ParametersDefinitionProperty>
+	  </properties>
+	  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.62">
+		<script>node {
+	   echo &quot;${params.aa}&quot;;
+	}</script>
+		<sandbox>true</sandbox>
+	  </definition>
+	  <triggers/>
+	  <disabled>false</disabled>
+	</flow-definition>
+	`
+	err := api.CreateJob("test22", config)
+	fmt.Println(err)
+}
+*/
+/*
+func TestDeleteJob(t *testing.T) {
+	api := NewAPI(baseurl, user, passwd)
+	api.DeleteJob("test22")
+}
+*/
+
+/*
+func TestUpdateJob(t *testing.T) {
+	api := NewAPI(baseurl, user, passwd)
+	config := `<?xml version='1.1' encoding='UTF-8'?>
+	<flow-definition plugin="workflow-job@2.29">
+	  <actions/>
+	  <description></description>
+	  <keepDependencies>false</keepDependencies>
+	  <properties>
+		<hudson.model.ParametersDefinitionProperty>
+		  <parameterDefinitions>
+			<hudson.model.StringParameterDefinition>
+			  <name>aa</name>
+			  <description></description>
+			  <defaultValue>bb</defaultValue>
+			  <trim>false</trim>
+			</hudson.model.StringParameterDefinition>
+		  </parameterDefinitions>
+		</hudson.model.ParametersDefinitionProperty>
+	  </properties>
+	  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.62">
+		<script>node {
+	   echo &quot;${params.aa}&quot;;
+	}</script>
+		<sandbox>true</sandbox>
+	  </definition>
+	  <triggers/>
+	  <disabled>false</disabled>
+	</flow-definition>
+	`
+	api.UpdateJob("test22", config)
+}
+*/
